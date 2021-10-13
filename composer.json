@@ -1,7 +1,7 @@
 {
-    "name": "fzaninotto/faker",
+    "name": "storefront/faker-minimal",
     "type": "library",
-    "description": "Faker is a PHP library that generates fake data for you.",
+    "description": "Minimal Faker is a PHP library that generates fake data for you. It's a fork of the original Faker, but reduced in size to only include what we need.",
     "keywords": [
         "faker",
         "fixtures",
@@ -10,11 +10,12 @@
     "license": "MIT",
     "authors": [
         {
-            "name": "François Zaninotto"
+            "name": "François Zaninotto",
+            "name": "Wouter Samaey"
         }
     ],
     "require": {
-        "php": "^5.3.3 || ^7.0 || ^8.0"
+        "php": "^7.0 || ^8.0"
     },
     "require-dev": {
         "ext-intl": "*",
@@ -29,11 +30,6 @@
     "autoload-dev": {
         "psr-4": {
             "Faker\\Test\\": "test/Faker/"
-        }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.9-dev"
         }
     },
     "config": {

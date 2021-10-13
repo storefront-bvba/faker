@@ -1,17 +1,10 @@
-# Faker
+# Minimal Faker - A fork of the original Faker, but reduced in size to only what we need
+See the original, archived repo at: https://github.com/fzaninotto/Faker
 
-[![Monthly Downloads](https://poser.pugx.org/fzaninotto/faker/d/monthly.png)](https://packagist.org/packages/fzaninotto/faker)
-[![Continuous Integration](https://github.com/fzaninotto/Faker/workflows/Continuous%20Integration/badge.svg?branch=master)](https://github.com/fzaninotto/Faker/actions)
-[![codecov](https://codecov.io/gh/fzaninotto/Faker/branch/master/graph/badge.svg)](https://codecov.io/gh/fzaninotto/Faker)
-[![SensioLabsInsight](https://insight.sensiolabs.com/projects/eceb78a9-38d4-4ad5-8b6b-b52f323e3549/mini.png)](https://insight.sensiolabs.com/projects/eceb78a9-38d4-4ad5-8b6b-b52f323e3549)
-
-Faker is a PHP library that generates fake data for you. Whether you need to bootstrap your database, create good-looking XML documents, fill-in your persistence to stress test it, or anonymize data taken from a production service, Faker is for you.
-
-Faker is heavily inspired by Perl's [Data::Faker](http://search.cpan.org/~jasonk/Data-Faker-0.07/), and by ruby's [Faker](https://rubygems.org/gems/faker).
-
-Faker requires PHP >= 5.3.3.
-
-**Faker is archived**. Read the reasons behind this decision here: [https://marmelab.com/blog/2020/10/21/sunsetting-faker.html](https://marmelab.com/blog/2020/10/21/sunsetting-faker.html) 
+- Our version only includes data for de_DE, en_GB, en_US, fr_FR, fr_BE, nl_BE and nl_NL, the countries we work for mostly.
+- Other locales have been removed.
+- ORM libraries have been removed.
+- PHP support for 5.x was dropped.
 
 # Table of Contents
 
@@ -24,7 +17,6 @@ Faker requires PHP >= 5.3.3.
 	- [Address](#fakerprovideren_usaddress)
 	- [Phone Number](#fakerprovideren_usphonenumber)
 	- [Company](#fakerprovideren_uscompany)
-	- [Real Text](#fakerprovideren_ustext)
 	- [Date and Time](#fakerproviderdatetime)
 	- [Internet](#fakerproviderinternet)
 	- [User Agent](#fakerprovideruseragent)
@@ -39,7 +31,6 @@ Faker requires PHP >= 5.3.3.
 	- [Html Lorem](#fakerproviderhtmllorem)
 - [Modifiers](#modifiers)
 - [Localization](#localization)
-- [Populating Entities Using an ORM or an ODM](#populating-entities-using-an-orm-or-an-odm)
 - [Seeding the Generator](#seeding-the-generator)
 - [Faker Internals: Understanding Providers](#faker-internals-understanding-providers)
 - [Real Life Usage](#real-life-usage)
@@ -51,7 +42,7 @@ Faker requires PHP >= 5.3.3.
 ## Installation
 
 ```sh
-composer require fzaninotto/faker
+composer require storefront/faker-minimal
 ```
 
 ## Basic Usage
@@ -423,71 +414,6 @@ for ($i = 0; $i < 10; $i++) {
 ```
 
 You can check available Faker locales in the source code, [under the `Provider` directory](https://github.com/fzaninotto/Faker/tree/master/src/Faker/Provider). The localization of Faker is an ongoing process, for which we need your help. Don't hesitate to create localized providers to your own locale and submit a PR!
-
-## Populating Entities Using an ORM or an ODM
-
-Faker provides adapters for Object-Relational and Object-Document Mappers (currently, [Propel](http://www.propelorm.org), [Doctrine2](http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/), [CakePHP](http://cakephp.org), [Spot2](https://github.com/vlucas/spot2), [Mandango](https://github.com/mandango/mandango) and [Eloquent](https://laravel.com/docs/master/eloquent) are supported). These adapters ease the population of databases through the Entity classes provided by an ORM library (or the population of document stores using Document classes provided by an ODM library).
-
-To populate entities, create a new populator class (using a generator instance as parameter), then list the class and number of all the entities that must be generated. To launch the actual data population, call the `execute()` method.
-
-Note that some of the `populators` could require additional parameters. As example the `doctrine` populator has an option to specify
-its batchSize on how often it will flush the UnitOfWork to the database.
-
-Here is an example showing how to populate 5 `Author` and 10 `Book` objects:
-
-```php
-<?php
-$generator = \Faker\Factory::create();
-$populator = new \Faker\ORM\Propel\Populator($generator);
-$populator->addEntity('Author', 5);
-$populator->addEntity('Book', 10);
-$insertedPKs = $populator->execute();
-```
-
-The populator uses name and column type guessers to populate each column with relevant data. For instance, Faker populates a column named `first_name` using the `firstName` formatter, and a column with a `TIMESTAMP` type using the `dateTime` formatter. The resulting entities are therefore coherent. If Faker misinterprets a column name, you can still specify a custom closure to be used for populating a particular column, using the third argument to `addEntity()`:
-
-```php
-<?php
-$populator->addEntity('Book', 5, array(
-  'ISBN' => function() use ($generator) { return $generator->ean13(); }
-));
-```
-
-In this example, Faker will guess a formatter for all columns except `ISBN`, for which the given anonymous function will be used.
-
-**Tip**: To ignore some columns, specify `null` for the column names in the third argument of `addEntity()`. This is usually necessary for columns added by a behavior:
-
-```php
-<?php
-$populator->addEntity('Book', 5, array(
-  'CreatedAt' => null,
-  'UpdatedAt' => null,
-));
-```
-
-Of course, Faker does not populate autoincremented primary keys. In addition, `Faker\ORM\Propel\Populator::execute()` returns the list of inserted PKs, indexed by class:
-
-```php
-<?php
-print_r($insertedPKs);
-// array(
-//   'Author' => (34, 35, 36, 37, 38),
-//   'Book'   => (456, 457, 458, 459, 470, 471, 472, 473, 474, 475)
-// )
-```
-
-**Note:** Due to the fact that `Faker` returns all the primary keys inserted, the memory consumption will go up drastically when you do batch inserts due to the big list of data.
-
-In the previous example, the `Book` and `Author` models share a relationship. Since `Author` entities are populated first, Faker is smart enough to relate the populated `Book` entities to one of the populated `Author` entities.
-
-Lastly, if you want to execute an arbitrary function on an entity before insertion, use the fourth argument of the `addEntity()` method:
-
-```php
-<?php
-$populator->addEntity('Book', 5, array(), array(
-  function($book) { $book->publish(); },
-));
-```
 
 ## Seeding the Generator
 
@@ -1760,41 +1686,6 @@ echo $faker->personalIdentityNumber; // A223456789
 // Generates a random VAT / Company Tax number
 echo $faker->VAT; //23456789
 ```
-
-
-## Third-Party Libraries Extending/Based On Faker
-
-* Symfony bundles:
-  * [`willdurand/faker-bundle`](https://github.com/willdurand/BazingaFakerBundle): Put the awesome Faker library into the Symfony2 DIC and populate your database with fake data.
-  * [`hautelook/alice-bundle`](https://github.com/hautelook/AliceBundle), [`h4cc/alice-fixtures-bundle`](https://github.com/h4cc/AliceFixturesBundle): Bundles for using [`nelmio/alice`](https://packagist.org/packages/nelmio/alice) and Faker with data fixtures. Able to use Doctrine ORM as well as Doctrine MongoDB ODM.
-* [`emanueleminotto/faker-service-provider`](https://github.com/EmanueleMinotto/FakerServiceProvider): Faker Service Provider for Silex
-* [`bit3/faker-cli`](https://github.com/bit3/faker-cli): Command Line Tool for the Faker PHP library
-* [`league/factory-muffin`](https://github.com/thephpleague/factory-muffin): enable the rapid creation of objects (PHP port of factory-girl)
-* [`fzaninotto/company-name-generator`](https://github.com/fzaninotto/CompanyNameGenerator): Generate names for English tech companies with class
-* [`emanueleminotto/faker-placehold-it-provider`](https://github.com/EmanueleMinotto/PlaceholdItProvider): Generate images using placehold.it
-* [`spyrit/datalea`](https://github.com/spyrit/datalea) A highly customizable random test data generator web app
-* [`frequenc1/newage-ipsum`](https://github.com/frequenc1/newage-ipsum): A new aged ipsum provider for the faker library inspired by http://sebpearce.com/bullshit/
-* [`prewk/xml-faker`](https://github.com/prewk/xml-faker): Create fake XML with Faker
-* [`denheck/faker-context`](https://github.com/denheck/faker-context): Behat context using Faker to generate testdata
-* [`swekaj/cron-expression-generator`](https://github.com/swekaj/CronExpressionGenerator): Faker provider for generating random, valid cron expressions.
-* [`pragmafabrik/pomm-faker`](https://github.com/pragmafabrik/Pomm2Faker): Faker client for Pomm database framework (PostgreSQL)
-* [`nelmio/alice`](https://github.com/nelmio/alice): Fixtures/object generator with a yaml DSL that can use Faker as data generator.
-* [`ravage84/cakephp-fake-seeder`](https://github.com/ravage84/cakephp-fake-seeder) A CakePHP 2.x shell to seed your database with fake and/or fixed data.
-* [`bheller/images-generator`](https://github.com/bruceheller/images-generator): An image generator provider using GD for placeholder type pictures
-* [`pattern-lab/plugin-faker`](https://github.com/pattern-lab/plugin-php-faker): Pattern Lab is a Styleguide, Component Library, and Prototyping tool. This creates unique content each time Pattern Lab is generated.
-* [`guidocella/eloquent-populator`](https://github.com/guidocella/eloquent-populator): Adapter for Laravel's Eloquent ORM.
-* [`tamperdata/exiges`](https://github.com/tamperdata/exiges): Faker provider for generating random temperatures
-* [`jzonta/faker-restaurant`](https://github.com/jzonta/FakerRestaurant): Faker for Food and Beverage names generate
-* [`aalaap/faker-youtube`](https://github.com/aalaap/faker-youtube): Faker for YouTube URLs in various formats
-* [`pelmered/fake-car`](https://github.com/pelmered/fake-car): Faker for cars and car data
-* [`bluemmb/faker-picsum-photos-provider`](https://github.com/bluemmb/Faker-PicsumPhotos): Generate images using [picsum.photos](http://picsum.photos/)
-* [`er1z/fakemock`](https://github.com/er1z/fakemock): Generate mocks using class-configuration and detection via Faker's guesser and Symfony asserts
-* [`xvladqt/faker-lorem-flickr`](https://github.com/xvladxtremal/Faker-LoremFlickr): Generate images using [loremflickr.com](http://loremflickr.com/)
-* [`metrakit/faker-eddy-malou`](https://github.com/Metrakit/faker-eddy-malou): Generate French Eddy Malou sentences & paragraphs
-* [`drupol/belgian-national-number-faker`](https://github.com/drupol/belgian-national-number-faker): Generate fake Belgian national numbers
-* [`elgentos/masquerade`](https://github.com/elgentos/masquerade): Configuration-based, platform-agnostic, locale-compatible data faker tool (out-of-the-box support for Magento 2)
-* [`ottaviano/faker-gravatar`](https://github.com/ottaviano/faker-gravatar): Generate avatars using [Gravatar](https://en.gravatar.com/site/implement/images/)
-* [`finwe/phpstan-faker`](https://github.com/finwe/phpstan-faker): PHPStan extension for Faker methods
 
 ## License
 
